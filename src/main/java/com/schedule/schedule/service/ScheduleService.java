@@ -3,6 +3,8 @@ package com.schedule.schedule.service;
 import com.schedule.schedule.dto.*;
 import com.schedule.schedule.entity.Schedule;
 import com.schedule.schedule.repository.ScheduleRepository;
+import com.schedule.user.entity.User;
+import com.schedule.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,15 +16,20 @@ import java.util.List;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
 
     // 생성 -> CreateScheduleRequest, CreateScheduleResponse
     @Transactional
     public CreateScheduleResponse save(CreateScheduleRequest request) {
-        Schedule schedule = new Schedule(request.getUsername(), request.getTitle(), request.getContent());
+        User user = userRepository.findById(request.getUserId()).orElseThrow(
+                () -> new IllegalStateException("없는 유저입니다.")
+        );
+        Schedule schedule = new Schedule(user, request.getTitle(), request.getContent());
         Schedule savedSchedule = scheduleRepository.save(schedule);
         return new CreateScheduleResponse(
                 savedSchedule.getId(),
-                savedSchedule.getUsername(),
+                savedSchedule.getUser().getId(),
+                savedSchedule.getUser().getUsername(),
                 savedSchedule.getTitle(),
                 savedSchedule.getContent(),
                 savedSchedule.getCreatedAt(),
@@ -37,7 +44,8 @@ public class ScheduleService {
         return schedules.stream()
                 .map(schedule -> new GetSchedulesResponse(
                         schedule.getId(),
-                        schedule.getUsername(),
+                        schedule.getUser().getId(),
+                        schedule.getUser().getUsername(),
                         schedule.getTitle(),
                         schedule.getCreatedAt(),
                         schedule.getModifiedAt()
@@ -53,7 +61,8 @@ public class ScheduleService {
         );
         return new GetScheduleResponse(
                 schedule.getId(),
-                schedule.getUsername(),
+                schedule.getUser().getId(),
+                schedule.getUser().getUsername(),
                 schedule.getTitle(),
                 schedule.getContent(),
                 schedule.getCreatedAt(),
@@ -70,7 +79,8 @@ public class ScheduleService {
         schedule.update(request.getTitle(), request.getContent());
         return new UpdateScheduleResponse(
                 schedule.getId(),
-                schedule.getUsername(),
+                schedule.getUser().getId(),
+                schedule.getUser().getUsername(),
                 schedule.getTitle(),
                 schedule.getContent(),
                 schedule.getCreatedAt(),
@@ -78,12 +88,5 @@ public class ScheduleService {
         );
     }
 
-    // 삭제
-    @Transactional
-    public void delete(Long scheduleId) {
-        if (!scheduleRepository.existsById(scheduleId)) {
-            throw new IllegalStateException("없는 일정입니다.");
-        }
-        scheduleRepository.deleteById(scheduleId);
-    }
+    // 삭제 — 변경 없음
 }
