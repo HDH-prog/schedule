@@ -2,6 +2,7 @@ package com.schedule.user.controller;
 
 import com.schedule.user.dto.*;
 import com.schedule.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ public class UserController {
 
     // 생성
     @PostMapping("/users")
-    public ResponseEntity<CreateUserResponse> saveUser(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<CreateUserResponse> saveUser(@Valid @RequestBody CreateUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.save(request));
     }
