@@ -1,5 +1,6 @@
 package com.schedule.user.service;
 
+import com.schedule.common.exception.UserNotFoundException;
 import com.schedule.user.dto.*;
 import com.schedule.user.entity.User;
 import com.schedule.user.repository.UserRepository;
@@ -48,7 +49,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public GetUserResponse getOne(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new IllegalStateException("없는 유저입니다.")
+                () -> new UserNotFoundException("없는 유저입니다.")
         );
         return new GetUserResponse(
                 user.getId(),
@@ -61,7 +62,7 @@ public class UserService {
     @Transactional
     public UpdateUserResponse update(Long userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new IllegalStateException("없는 유저입니다.")
+                () -> new UserNotFoundException("없는 유저입니다.")
         );
         user.update(request.getUsername(), request.getEmail());
         return new UpdateUserResponse(
@@ -77,7 +78,7 @@ public class UserService {
     @Transactional
     public void delete(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new IllegalStateException("없는 유저입니다.");
+            throw new UserNotFoundException("없는 유저입니다.");
         }
         userRepository.deleteById(userId);
     }

@@ -6,7 +6,12 @@ import lombok.Getter;
 
 @Getter
 public class CreateUserRequest {
+
+    @NotBlank
+    @Size(min = 4)
     private String username;
+
+    @NotBlank
     private String email;
 
     @NotBlank(message = "비밀번호 필수!")

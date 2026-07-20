@@ -1,5 +1,7 @@
 package com.schedule.schedule.service;
 
+import com.schedule.common.exception.ScheduleNotFoundException;
+import com.schedule.common.exception.UserNotFoundException;
 import com.schedule.schedule.dto.*;
 import com.schedule.schedule.entity.Schedule;
 import com.schedule.schedule.repository.ScheduleRepository;
@@ -22,7 +24,7 @@ public class ScheduleService {
     @Transactional
     public CreateScheduleResponse save(CreateScheduleRequest request) {
         User user = userRepository.findById(request.getUserId()).orElseThrow(
-                () -> new IllegalStateException("없는 유저입니다.")
+                () -> new UserNotFoundException("없는 유저입니다.")
         );
         Schedule schedule = new Schedule(user, request.getTitle(), request.getContent());
         Schedule savedSchedule = scheduleRepository.save(schedule);
@@ -57,7 +59,7 @@ public class ScheduleService {
     @Transactional(readOnly = true)
     public GetScheduleResponse getOne(Long scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new IllegalStateException("없는 일정입니다.")
+                () -> new ScheduleNotFoundException("없는 일정입니다.")
         );
         return new GetScheduleResponse(
                 schedule.getId(),
@@ -74,7 +76,7 @@ public class ScheduleService {
     @Transactional
     public UpdateScheduleResponse update(Long scheduleId, UpdateScheduleRequest request) {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new IllegalStateException("없는 일정입니다.")
+                () -> new ScheduleNotFoundException("없는 일정입니다.")
         );
         schedule.update(request.getTitle(), request.getContent());
         return new UpdateScheduleResponse(
@@ -88,5 +90,12 @@ public class ScheduleService {
         );
     }
 
-    // 삭제 — 변경 없음
+    // 삭제
+    @Transactional
+    public void delete(Long scheduleId) {
+        if (!scheduleRepository.existsById(scheduleId)) {
+            throw new ScheduleNotFoundException("없는 일정입니다.");
+        }
+        scheduleRepository.deleteById(scheduleId);
+    }
 }
