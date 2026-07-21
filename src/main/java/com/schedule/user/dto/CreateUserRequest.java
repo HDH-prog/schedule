@@ -8,7 +8,7 @@ import lombok.Getter;
 public class CreateUserRequest {
 
     @NotBlank
-    @Size(min = 4)
+    @Size(min = 2, max = 5)
     private String username;
 
     @NotBlank
