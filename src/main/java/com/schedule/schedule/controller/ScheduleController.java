@@ -2,7 +2,9 @@ package com.schedule.schedule.controller;
 
 import com.schedule.schedule.dto.*;
 import com.schedule.schedule.service.ScheduleService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,16 +19,19 @@ public class ScheduleController {
 
     // 생성
     @PostMapping("/schedules")
-    public ResponseEntity<CreateScheduleResponse> saveSchedule(@RequestBody CreateScheduleRequest request) {
+    public ResponseEntity<CreateScheduleResponse> saveSchedule(@Valid @RequestBody CreateScheduleRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(scheduleService.save(request));
     }
 
-    // 전체 조회
+    // 페이징 조회
     @GetMapping("/schedules")
-    public ResponseEntity<List<GetSchedulesResponse>> getSchedules() {
+    public ResponseEntity<Page<GetSchedulePageResponse>> getSchedules(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(scheduleService.getAll());
+                .body(scheduleService.getPage(page, size));
     }
 
     // 단건 조회
@@ -40,7 +45,7 @@ public class ScheduleController {
     @PatchMapping("/schedules/{scheduleId}")
     public ResponseEntity<UpdateScheduleResponse> updateSchedule(
             @PathVariable Long scheduleId,
-            @RequestBody UpdateScheduleRequest request
+            @Valid @RequestBody UpdateScheduleRequest request
     ) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(scheduleService.update(scheduleId, request));

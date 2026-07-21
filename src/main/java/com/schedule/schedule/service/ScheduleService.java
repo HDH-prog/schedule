@@ -1,5 +1,6 @@
 package com.schedule.schedule.service;
 
+import com.schedule.comment.repository.CommentRepository;
 import com.schedule.common.exception.ScheduleNotFoundException;
 import com.schedule.common.exception.UserNotFoundException;
 import com.schedule.schedule.dto.*;
@@ -8,10 +9,12 @@ import com.schedule.schedule.repository.ScheduleRepository;
 import com.schedule.user.entity.User;
 import com.schedule.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,7 @@ public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
 
     // 생성 -> CreateScheduleRequest, CreateScheduleResponse
     @Transactional
@@ -39,21 +43,21 @@ public class ScheduleService {
         );
     }
 
-    // 전체 조회 -> GetSchedulesResponse
-    @Transactional(readOnly = true)
-    public List<GetSchedulesResponse> getAll() {
-        List<Schedule> schedules = scheduleRepository.findAll();
-        return schedules.stream()
-                .map(schedule -> new GetSchedulesResponse(
-                        schedule.getId(),
-                        schedule.getUser().getId(),
-                        schedule.getUser().getUsername(),
-                        schedule.getTitle(),
-                        schedule.getCreatedAt(),
-                        schedule.getModifiedAt()
-                ))
-                .toList();
-    }
+//    // 전체 조회 -> GetSchedulesResponse
+//    @Transactional(readOnly = true)
+//    public List<GetSchedulesResponse> getPage(int page, int size) {
+//        List<Schedule> schedules = scheduleRepository.findAll();
+//        return schedules.stream()
+//                .map(schedule -> new GetSchedulesResponse(
+//                        schedule.getId(),
+//                        schedule.getUser().getId(),
+//                        schedule.getUser().getUsername(),
+//                        schedule.getTitle(),
+//                        schedule.getCreatedAt(),
+//                        schedule.getModifiedAt()
+//                ))
+//                .toList();
+//    }
 
     // 단건 조회 -> GetScheduleResponse
     @Transactional(readOnly = true)
@@ -79,6 +83,7 @@ public class ScheduleService {
                 () -> new ScheduleNotFoundException("없는 일정입니다.")
         );
         schedule.update(request.getTitle(), request.getContent());
+        scheduleRepository.flush();
         return new UpdateScheduleResponse(
                 schedule.getId(),
                 schedule.getUser().getId(),
@@ -97,5 +102,21 @@ public class ScheduleService {
             throw new ScheduleNotFoundException("없는 일정입니다.");
         }
         scheduleRepository.deleteById(scheduleId);
+    }
+
+    // 페이징
+    @Transactional(readOnly = true)
+    public Page<GetSchedulePageResponse> getPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("modifiedAt").descending());
+        return scheduleRepository.findAll(pageable)
+                .map(schedule -> new GetSchedulePageResponse(
+                        schedule.getId(),
+                        schedule.getUser().getUsername(),
+                        schedule.getTitle(),
+                        schedule.getContent(),
+                        commentRepository.countByScheduleId(schedule.getId()),
+                        schedule.getCreatedAt(),
+                        schedule.getModifiedAt()
+                ));
     }
 }
