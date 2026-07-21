@@ -1,6 +1,7 @@
 package com.schedule.user.service;
 
 import com.schedule.common.exception.UserNotFoundException;
+import com.schedule.config.PasswordEncoder;
 import com.schedule.user.dto.*;
 import com.schedule.user.entity.User;
 import com.schedule.user.repository.UserRepository;
@@ -15,11 +16,13 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 생성 -> CreateUserRequest, CreateUserResponse
     @Transactional
     public CreateUserResponse save(CreateUserRequest request) {
-        User user = new User(request.getUsername(), request.getEmail(), request.getPassword());
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        User user = new User(request.getUsername(), request.getEmail(), encodedPassword);
         User savedUser = userRepository.save(user);
         return new CreateUserResponse(
                 savedUser.getId(),
