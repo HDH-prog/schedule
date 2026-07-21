@@ -80,9 +80,9 @@
 ### LAZY
 Select문 2번
 
-![LAZY 실행 결과](./resources/images/lazy.png)
+![LAZY 실행 결과](./images/lazy.png)
 
 ### EAGER
 Select문 1번 
 
-![EAGER 실행 결과](./resources/images/eager.png)
+![EAGER 실행 결과](./images/eager.png)
