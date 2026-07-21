@@ -74,3 +74,15 @@
 | schedule_id | BIGINT | FK → schedules.id, NOT NULL | 대상 일정 |
 | created_at | DATETIME | NOT NULL | 작성일 (JPA Auditing) |
 | modified_at | DATETIME | NOT NULL | 수정일 (JPA Auditing) |
+
+
+## FetchType LAZY vs EAGER
+### LAZY
+Select문 2번
+
+![LAZY 실행 결과](./resources/images/lazy.png)
+
+### EAGER
+Select문 1번 
+
+![EAGER 실행 결과](./resources/images/eager.png)
